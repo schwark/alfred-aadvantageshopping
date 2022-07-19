@@ -271,7 +271,7 @@
 				<key>escaping</key>
 				<integer>98</integer>
 				<key>script</key>
-				<string>/usr/local/bin/python command.py --favorite {query}</string>
+				<string>/usr/local/bin/python command.py --favorite "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
