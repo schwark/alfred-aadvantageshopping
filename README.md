@@ -18,6 +18,13 @@ aeconfig update
 ```
 This should be needed once at the install, and everytime you want to update promotional cashback information - the links to the stores are the same, but the subtitle data with cashback information may be dated if this is not run regularly
 
+## Logo Update
+
+```
+aeconfig logos
+```
+This should be needed once at the install, and everytime you want to update store logos
+
 ## Show Stores and Links
 
 ```
