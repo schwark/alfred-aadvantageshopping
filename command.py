@@ -37,6 +37,7 @@ def get_logos(wf, stores):
     for store in stores:
         filename = get_logo_file(wf, store)
         if not exists(filename):
+            log.debug("Missing logo file - downloading "+filename)
             url = store['logoUrls']['_120x60']
             r = web.get(url)
             r.save_to_path(filename)
