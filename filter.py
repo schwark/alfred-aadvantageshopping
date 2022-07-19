@@ -5,6 +5,7 @@ import re
 import argparse
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
 from workflow import Workflow, ICON_WEB, ICON_WARNING, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
+from common import get_logo_file
 
 log = None
 
@@ -21,34 +22,27 @@ def add_config_commands(wf, args, config_commands):
                         valid=config_commands[cmd]['valid'])
     return config_command_list
 
-def is_filtered_store(x, filters):
-    filter_metadata = {':fav': 'isFavorite', ':prm': 'isElevation'}
-    for key in filter_metadata:
-        if key in filters:
-            log.debug("active filter :"+key)
-            value = filter_metadata[key]
-            if 'isElevation' == value:
-                p = x['rebate']
-            else:
-                p = x
-            if value not in p or not p[value]:
-                return False
+def is_filtered_store(x, filters, favorites):
+    if ':fav' in filters and favorites and x['id'] not in favorites:
+        return False
+    if ':prm' in filters and not x['rebate']['isElevation']:
+        return False
     return True
     
 def search_key_for_store(x):
     return x['name']
     
-def get_subtitle(x):
+def get_subtitle(x, favorites):
     rebate = x['rebate']
     result = 'Earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
         result = u'🏆 '+result+' : usually '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
-    if 'isFavorite' in x and x['isFavorite']:
+    if x['id'] in favorites:
         result = u'❤️ '+ result
     return result
         
-def get_query_stores(wf, query, stores, filters):
-    filtered_stores = filter(lambda x: is_filtered_store(x,filters), stores)
+def get_query_stores(wf, query, stores, filters, favorites):
+    filtered_stores = filter(lambda x: is_filtered_store(x,filters,favorites), stores)
     result = wf.filter(query, filtered_stores, key=lambda x: search_key_for_store(x))
     # check to see if the first one is an exact match - if yes, remove all the other results
     if result and query and 'name' in result[0] and result[0]['name'] and result[0]['name'].lower() == query.lower():
@@ -58,6 +52,7 @@ def get_query_stores(wf, query, stores, filters):
 def main(wf):
     # retrieve cached devices and scenes
     stores = wf.stored_data('stores')
+    favorites = wf.stored_data('favorites') or {}
 
     # build argument parser to parse script args and collect their
     # values
@@ -127,18 +122,18 @@ def main(wf):
         return 0
 
     # If script was passed a query, use it to filter posts
-    stores = get_query_stores(wf, query, stores, filters)
+    stores = get_query_stores(wf, query, stores, filters, favorites)
 
     if stores:
         # Loop through the returned devices and add an item for each to
         # the list of results for Alfred
         for store in stores:
             wf.add_item(title=store['name'],
-                    subtitle=get_subtitle(store),
+                    subtitle=get_subtitle(store, favorites),
                     arg=store['clickUrl'],
                     autocomplete=store['name'],
                     valid=True,
-                    icon='logos/'+str(store['id'])+'.jpg')
+                    icon=get_logo_file(wf, store))
     else:
         wf.add_item(title='No qualifying stores...', 
                     subtitle="No stores matched your criteria", 

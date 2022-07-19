@@ -7,6 +7,7 @@ from os.path import exists
 from types import NoneType
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
 from workflow import Workflow, ICON_WEB, ICON_WARNING, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
+from common import get_logo_file
 
 log = None
 
@@ -32,9 +33,9 @@ def get_stores():
     r = web.get(url='https://api.cartera.com/content/v4/merchants', headers=headers, params=params)
     return r.json()['response']
 
-def get_logos(stores):
+def get_logos(wf, stores):
     for store in stores:
-        filename = 'logos/'+str(store['id'])+'.jpg'
+        filename = get_logo_file(wf, store)
         if not exists(filename):
             url = store['logoUrls']['_120x60']
             r = web.get(url)
@@ -43,7 +44,8 @@ def get_logos(stores):
 def main(wf):
     # retrieve cached devices and scenes
     stores = wf.stored_data('stores')
-
+    favorites = wf.stored_data('favorites') or {}
+    
     # build argument parser to parse script args and collect their
     # values
     parser = argparse.ArgumentParser()
@@ -75,7 +77,7 @@ def main(wf):
         # update devices and scenes
         stores = get_stores()
         wf.store_data('stores', stores)
-        get_logos(stores)
+        get_logos(wf, stores)
         print('Stores updated')
         return 0  # 0 means script exited cleanly
     
@@ -83,8 +85,8 @@ def main(wf):
         stores = wf.stored_data('stores')
         index = next((i for i, store in enumerate(stores) if store["clickUrl"] == args.favorite), None)
         if index is not None:
-            stores[index]['isFavorite'] = True
-        wf.store_data('stores', stores)
+            favorites[stores[index]['id']] = True
+        wf.store_data('favorites', favorites)
         print(stores[index]['name']+' set as favorite')
 
 if __name__ == u"__main__":
