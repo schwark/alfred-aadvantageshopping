@@ -79,6 +79,14 @@ def main(wf):
             'icon': ICON_SYNC,
             'valid': True
         },
+        'logos': {
+            'title': 'Update Store Logos',
+            'subtitle': 'Update the supported store logos on AAdvantage',
+            'autocomplete': 'logos',
+            'args': ' --logos',
+            'icon': ICON_SYNC,
+            'valid': True
+        },
         'reinit': {
             'title': 'Reinitialize the workflow',
             'subtitle': 'CAUTION: this deletes all scenes, devices and apikeys...',

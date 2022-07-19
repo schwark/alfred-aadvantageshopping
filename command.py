@@ -54,6 +54,7 @@ def main(wf):
     # value to 'apikey' (dest). This will be called from a separate "Run Script"
     # action with the API key
     parser.add_argument('--update', dest='update', action='store_true', default=False)
+    parser.add_argument('--logos', dest='logos', action='store_true', default=False)
     # reinitialize 
     parser.add_argument('--reinit', dest='reinit', action='store_true', default=False)
     parser.add_argument('--favorite', dest='favorite', default='')
@@ -78,8 +79,13 @@ def main(wf):
         # update devices and scenes
         stores = get_stores()
         wf.store_data('stores', stores)
-        get_logos(wf, stores)
         print('Stores updated')
+        return 0  # 0 means script exited cleanly
+    
+    # Update devices if that is passed in
+    if args.logos:  
+        get_logos(wf, stores)
+        print('Logos updated')
         return 0  # 0 means script exited cleanly
     
     if args.favorite:
