@@ -4,8 +4,6 @@
 <dict>
 	<key>bundleid</key>
 	<string>com.schwark.aadvantageshopping</string>
-	<key>category</key>
-	<string>Tools</string>
 	<key>connections</key>
 	<dict>
 		<key>67456363-F141-4687-B7F1-94A6BA8F021C</key>
@@ -34,6 +32,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>D0906367-A074-4452-9B90-1281720DF7F7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A498CBB5-F90F-4CB7-812E-D0807EA34BEF</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>E74DDC59-7EC6-40AE-A0C3-9DD7E00A2B17</key>
 		<array>
 			<dict>
@@ -43,6 +54,16 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>D0906367-A074-4452-9B90-1281720DF7F7</string>
+				<key>modifiers</key>
+				<integer>131072</integer>
+				<key>modifiersubtext</key>
+				<string>Set Store as Favorite</string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -221,6 +242,50 @@
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>AAdvantage</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>A498CBB5-F90F-4CB7-812E-D0807EA34BEF</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>98</integer>
+				<key>script</key>
+				<string>/usr/local/bin/python command.py --favorite {query}</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>D0906367-A074-4452-9B90-1281720DF7F7</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Alfred Workflow for AAdvantage Eshopping</string>
@@ -253,6 +318,20 @@
 			<real>55</real>
 			<key>ypos</key>
 			<real>60</real>
+		</dict>
+		<key>A498CBB5-F90F-4CB7-812E-D0807EA34BEF</key>
+		<dict>
+			<key>xpos</key>
+			<real>380</real>
+			<key>ypos</key>
+			<real>350</real>
+		</dict>
+		<key>D0906367-A074-4452-9B90-1281720DF7F7</key>
+		<dict>
+			<key>xpos</key>
+			<real>210</real>
+			<key>ypos</key>
+			<real>355</real>
 		</dict>
 		<key>E74DDC59-7EC6-40AE-A0C3-9DD7E00A2B17</key>
 		<dict>

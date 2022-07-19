@@ -21,20 +21,33 @@ def add_config_commands(wf, args, config_commands):
                         valid=config_commands[cmd]['valid'])
     return config_command_list
 
-def search_key_for_store(x):
+def search_key_for_store(x, filters):
+    filter_metadata = {':fav': 'isFavorite', ':prm': 'isElevation'}
+    for key in filter_metadata:
+        if key in filters:
+            log.debug("active filter :"+key)
+            value = filter_metadata[key]
+            if 'isElevation' == value:
+                p = x['rebate']
+            else:
+                p = x
+            if value not in p or not p[value]:
+                return ""
     return x['name']
-
+    
 def get_subtitle(x):
     rebate = x['rebate']
     result = 'Earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
         result = u'🏆 '+result+' : usually '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
+    if 'isFavorite' in x and x['isFavorite']:
+        result = u'❤️ '+ result
     return result
         
-def get_filtered_stores(wf, query, stores):
-    result = wf.filter(query, stores, key=lambda x: search_key_for_store(x), min_score=80, match_on=MATCH_SUBSTRING | MATCH_STARTSWITH | MATCH_ATOM)
+def get_filtered_stores(wf, query, stores, filters):
+    result = wf.filter(query, stores, key=lambda x: search_key_for_store(x, filters), min_score=80, match_on=MATCH_SUBSTRING | MATCH_STARTSWITH | MATCH_ATOM)
     # check to see if the first one is an exact match - if yes, remove all the other results
-    if result and query and 'label' in result[0] and result[0]['label'] and result[0]['label'].lower() == query.lower():
+    if result and query and 'name' in result[0] and result[0]['name'] and result[0]['name'].lower() == query.lower():
         result = result[0:1]
     return result
 
@@ -52,7 +65,11 @@ def main(wf):
 
     log.debug("args are "+str(args))
 
-    words = args.query.split(' ') if args.query else []
+    filters = [ t for t in args.query.split() if t.startswith(':') ]
+    log.debug("filters are "+str(filters))
+    # update query post extraction
+    query = " ".join(filter(lambda x:x[0]!=':', args.query.split()))
+    log.debug("query is now "+query)
 
     config_commands = {
         'update': {
@@ -83,10 +100,6 @@ def main(wf):
 
     # add config commands to filter
     add_config_commands(wf, args, config_commands)
- 
-    # update query post extraction
-    query = args.query
-
 
     ####################################################################
     # View/filter devices or scenes
@@ -111,7 +124,7 @@ def main(wf):
 
     # If script was passed a query, use it to filter posts
     if query:
-        stores = get_filtered_stores(wf, query, stores)
+        stores = get_filtered_stores(wf, query, stores, filters)
 
         if stores:
             # Loop through the returned devices and add an item for each to
@@ -123,6 +136,10 @@ def main(wf):
                         autocomplete=store['name'],
                         valid=True,
                         icon='logos/'+str(store['id'])+'.jpg')
+        else:
+            wf.add_item(title='No qualifying stores...', 
+                        subtitle="No stores matched your criteria", 
+                        icon=ICON_WARNING)
         # Send the results to Alfred as XML
         wf.send_feedback()
     return 0

@@ -21,10 +21,15 @@ This should be needed once at the install, and everytime you want to update prom
 ## Show Stores and Links
 
 ```
-ae <query>
+ae [:fav|:prm] <query>
 ```
-This will allow you to search for any store - and will show matching stores as well as the cashback information. If a store is running a promotional elevated cashback, it will be denoted by a 🏆 symbol, and will shows the regular cashback information as well. 
+This will allow you to search for any store - and will show matching stores as well as the cashback information. If a store is running a promotional elevated cashback, it will be denoted by a 🏆 symbol, and will shows the regular cashback information as well. Favorite stores are denoted by ❤️
 
+Shift clicking an item sets it as a favorite store.
+
+Adding :fav to the query will limit results to favorited stores
+
+Adding :prm to the query will limit results to stores that have a promotional rebate level
 
 
 ## Reinitialize

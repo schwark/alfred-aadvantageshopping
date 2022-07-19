@@ -4,6 +4,7 @@ import sys
 import re
 import argparse
 from os.path import exists
+from types import NoneType
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
 from workflow import Workflow, ICON_WEB, ICON_WARNING, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
 
@@ -52,6 +53,7 @@ def main(wf):
     parser.add_argument('--update', dest='update', action='store_true', default=False)
     # reinitialize 
     parser.add_argument('--reinit', dest='reinit', action='store_true', default=False)
+    parser.add_argument('--favorite', dest='favorite', default='')
     # add an optional query and save it to 'query'
     parser.add_argument('query', nargs='?', default=None)
     # parse the script's arguments
@@ -76,7 +78,14 @@ def main(wf):
         get_logos(stores)
         print('Stores updated')
         return 0  # 0 means script exited cleanly
-
+    
+    if args.favorite:
+        stores = wf.stored_data('stores')
+        index = next((i for i, store in enumerate(stores) if store["clickUrl"] == args.favorite), None)
+        if index is not None:
+            stores[index]['isFavorite'] = True
+        wf.store_data('stores', stores)
+        print(stores[index]['name']+' set as favorite')
 
 if __name__ == u"__main__":
     wf = Workflow(update_settings={
