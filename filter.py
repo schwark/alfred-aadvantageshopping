@@ -21,7 +21,7 @@ def add_config_commands(wf, args, config_commands):
                         valid=config_commands[cmd]['valid'])
     return config_command_list
 
-def search_key_for_store(x, filters):
+def is_filtered_store(x, filters):
     filter_metadata = {':fav': 'isFavorite', ':prm': 'isElevation'}
     for key in filter_metadata:
         if key in filters:
@@ -32,7 +32,10 @@ def search_key_for_store(x, filters):
             else:
                 p = x
             if value not in p or not p[value]:
-                return ""
+                return False
+    return True
+    
+def search_key_for_store(x):
     return x['name']
     
 def get_subtitle(x):
@@ -44,8 +47,9 @@ def get_subtitle(x):
         result = u'❤️ '+ result
     return result
         
-def get_filtered_stores(wf, query, stores, filters):
-    result = wf.filter(query, stores, key=lambda x: search_key_for_store(x, filters), min_score=80, match_on=MATCH_SUBSTRING | MATCH_STARTSWITH | MATCH_ATOM)
+def get_query_stores(wf, query, stores, filters):
+    filtered_stores = filter(lambda x: is_filtered_store(x,filters), stores)
+    result = wf.filter(query, filtered_stores, key=lambda x: search_key_for_store(x))
     # check to see if the first one is an exact match - if yes, remove all the other results
     if result and query and 'name' in result[0] and result[0]['name'] and result[0]['name'].lower() == query.lower():
         result = result[0:1]
@@ -123,25 +127,24 @@ def main(wf):
         return 0
 
     # If script was passed a query, use it to filter posts
-    if query:
-        stores = get_filtered_stores(wf, query, stores, filters)
+    stores = get_query_stores(wf, query, stores, filters)
 
-        if stores:
-            # Loop through the returned devices and add an item for each to
-            # the list of results for Alfred
-            for store in stores:
-                wf.add_item(title=store['name'],
-                        subtitle=get_subtitle(store),
-                        arg=store['clickUrl'],
-                        autocomplete=store['name'],
-                        valid=True,
-                        icon='logos/'+str(store['id'])+'.jpg')
-        else:
-            wf.add_item(title='No qualifying stores...', 
-                        subtitle="No stores matched your criteria", 
-                        icon=ICON_WARNING)
-        # Send the results to Alfred as XML
-        wf.send_feedback()
+    if stores:
+        # Loop through the returned devices and add an item for each to
+        # the list of results for Alfred
+        for store in stores:
+            wf.add_item(title=store['name'],
+                    subtitle=get_subtitle(store),
+                    arg=store['clickUrl'],
+                    autocomplete=store['name'],
+                    valid=True,
+                    icon='logos/'+str(store['id'])+'.jpg')
+    else:
+        wf.add_item(title='No qualifying stores...', 
+                    subtitle="No stores matched your criteria", 
+                    icon=ICON_WARNING)
+    # Send the results to Alfred as XML
+    wf.send_feedback()
     return 0
 
 
