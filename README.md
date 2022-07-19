@@ -3,7 +3,7 @@ Alfred  Workflow for to access AAdvantage Eshopping sites
 ## Install
 
 * Download .workflow file from [Releases](https://github.com/schwark/alfred-aadvantageshopping/releases)
-* Can be installed from Packal at http://www.packal.org/workflow/
+* Can be installed from Packal at http://www.packal.org/workflow/aadvantage-eshopping
 * Can also be downloaded from github as a zip file, unzip the downloaded zip, cd into the zip directory, and create a new zip with all the files in that folder, and then renamed to AAdvantageshopping.alfredworkflow
 * Or you can use the workflow-build script in the folder, using
 ```
