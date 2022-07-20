@@ -90,11 +90,14 @@ def main(wf):
     
     if args.favorite:
         stores = wf.stored_data('stores')
-        index = next((i for i, store in enumerate(stores) if store["clickUrl"] == args.favorite), None)
+        url = args.favorite
+        index = next((i for i, store in enumerate(stores) if store["clickUrl"] == url), None)
         if index is not None:
-            favorites[stores[index]['id']] = True
+            currentState = favorites[stores[index]['id']] if stores[index]['id'] in favorites else False
+            favorites[stores[index]['id']] = not currentState
         wf.store_data('favorites', favorites)
-        print(stores[index]['name']+' set as favorite')
+        prefix = ' un' if currentState else ' '
+        print(stores[index]['name']+prefix+'set as favorite')
 
 if __name__ == u"__main__":
     wf = Workflow(update_settings={

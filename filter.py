@@ -37,7 +37,7 @@ def get_subtitle(x, favorites):
     result = 'Earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
         result = u'🏆 '+result+' : usually '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
-    if x['id'] in favorites:
+    if x['id'] in favorites and favorites[x['id']]:
         result = u'❤️ '+ result
     return result
         

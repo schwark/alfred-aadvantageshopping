@@ -32,7 +32,9 @@ ae [:fav|:prm] <query>
 ```
 This will allow you to search for any store - and will show matching stores as well as the cashback information. If a store is running a promotional elevated cashback, it will be denoted by a 🏆 symbol, and will shows the regular cashback information as well. Favorite stores are denoted by ❤️
 
-Shift clicking an item sets it as a favorite store.
+Clicking takes you directly to the site, assuming you are logged into https://aadvantageeshopping.com, else you will be prompted to login before you go to site
+
+Shift clicking an item sets it as a favorite store, or unsets as favorite
 
 Adding :fav to the query will limit results to favorited stores
 

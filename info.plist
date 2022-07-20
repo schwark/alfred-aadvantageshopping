@@ -63,7 +63,7 @@
 				<key>modifiers</key>
 				<integer>131072</integer>
 				<key>modifiersubtext</key>
-				<string>Set Store as Favorite</string>
+				<string>Toggle Store as Favorite</string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
