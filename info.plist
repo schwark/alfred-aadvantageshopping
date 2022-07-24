@@ -87,7 +87,7 @@
 				<key>escaping</key>
 				<integer>98</integer>
 				<key>script</key>
-				<string>/usr/local/bin/python command.py {query}</string>
+				<string>${PYTHON2_PATH}/python2 command.py {query}</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -130,7 +130,7 @@
 				<key>runningsubtext</key>
 				<string></string>
 				<key>script</key>
-				<string>/usr/local/bin/python filter.py "{query}"</string>
+				<string>${PYTHON2_PATH}/python2 filter.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -200,7 +200,7 @@
 				<key>runningsubtext</key>
 				<string></string>
 				<key>script</key>
-				<string>/usr/local/bin/python filter.py "{query}"</string>
+				<string>${PYTHON2_PATH}/python2 filter.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -271,7 +271,7 @@
 				<key>escaping</key>
 				<integer>98</integer>
 				<key>script</key>
-				<string>/usr/local/bin/python command.py --favorite "{query}"</string>
+				<string>${PYTHON2_PATH}/python2 command.py --favorite "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -342,7 +342,29 @@
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
-	<array/>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>/Users/&lt;username&gt;/.pyenv/shims</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>If you use pyenv to install just insert your username into the default value. Otherwise, put in the path to your Python2 installation</string>
+			<key>label</key>
+			<string>Python2 Path</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>PYTHON2_PATH</string>
+		</dict>
+	</array>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>webaddress</key>
