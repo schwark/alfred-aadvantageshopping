@@ -19,7 +19,7 @@ def get_stores():
         'section_id': 10161,
         'limit': 2000,
         'sort_by': 'name',
-        'fields': 'name,type,id,clickUrl,synonyms,showRebate,rebate,logoUrls._120x60,relatedActiveMerchants',
+        'fields': 'name,type,id,clickUrl,synonyms,showRebate,rebate,logoUrls._120x60,relatedActiveMerchants,categories',
         'include_inactive': 0
     }
     headers = {

@@ -28,17 +28,31 @@ def is_filtered_store(x, filters, favorites):
     if ':prm' in filters and not x['rebate']['isElevation']:
         return False
     return True
+
+def get_categories(x):
+    categories = [c['name'] for c in (x['categories'] if 'categories' in x else [])]
+    return (', '.join(categories)) if categories else ''
     
 def search_key_for_store(x):
-    return x['name']
-    
+    categories = get_categories(x)
+    return x['name']+(' '+categories if categories else '')
+
 def get_subtitle(x, favorites):
+    spacer = u'   '
     rebate = x['rebate']
-    result = 'Earn '+str(rebate['value'])+' '+rebate['currency']
+    regularly = ''
+    result = u'earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
-        result = u'🏆 '+result+' : usually '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
+        result = u'🏆 '+result
+        regularly = u' ↓ regularly '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
     if x['id'] in favorites and favorites[x['id']]:
         result = u'❤️ '+ result
+    result += spacer+regularly
+    categories = get_categories(x)
+    if categories:
+        #result = u'{0:<70} {1:<50}'.format(result, u' ⦿ '+categories) 
+        #result = result + spacer + u'⦿ '+categories
+        pass
     return result
         
 def get_query_stores(wf, query, stores, filters, favorites):
