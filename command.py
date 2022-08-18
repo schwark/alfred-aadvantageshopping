@@ -1,13 +1,13 @@
 # encoding: utf-8
 
+from multiprocessing.sharedctypes import Value
 import sys
 import re
 import argparse
 from os.path import exists
-from types import NoneType
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
-from workflow import Workflow, ICON_WEB, ICON_WARNING, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
-from common import get_logo_file
+from workflow import Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
+from common import get_logo_file, get_stored_data
 
 log = None
 
@@ -44,8 +44,8 @@ def get_logos(wf, stores):
 
 def main(wf):
     # retrieve cached devices and scenes
-    stores = wf.stored_data('stores')
-    favorites = wf.stored_data('favorites') or {}
+    stores = get_stored_data(wf, 'stores')
+    favorites = get_stored_data(wf, 'favorites')
     
     # build argument parser to parse script args and collect their
     # values
