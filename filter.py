@@ -1,7 +1,9 @@
 # encoding: utf-8
 
+import datetime
 import sys
 import argparse
+from workflow.background import is_running, run_in_background
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
 from workflow import Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
 from common import get_logo_file, get_stored_data
@@ -64,6 +66,7 @@ def get_query_stores(wf, query, stores, filters, favorites):
 
 def main(wf):
     # retrieve cached devices and scenes
+    last_update = get_stored_data(wf, 'last_update') or datetime.datetime.fromtimestamp(0)
     stores = get_stored_data(wf, 'stores')
     favorites = get_stored_data(wf, 'favorites')
 
@@ -125,6 +128,14 @@ def main(wf):
     # View/filter devices or scenes
     ####################################################################
 
+    freq = 86400
+    # Is cache over 1 hour old or non-existent?
+    if datetime.datetime.now() - last_update > datetime.timedelta(seconds=freq):
+        run_in_background('update',
+                        ['/usr/bin/python3',
+                        wf.workflowfile('command.py'),
+                        '--update'])
+
     # Check for an update and if available add an item to results
     if wf.update_available:
         # Add a notification to top of Script Filter results
@@ -133,6 +144,13 @@ def main(wf):
             autocomplete='workflow:update',
             icon=ICON_INFO)
 
+    if is_running('update'):
+        # Tell Alfred to run the script again every 0.5 seconds
+        # until the `update` job is complete (and Alfred is
+        # showing results based on the newly-retrieved data)
+        wf.rerun = 0.5
+        # Add a notification if the script is running
+        wf.add_item('Updating stores...', icon=ICON_INFO)
 
     if not stores or len(stores) < 1:
         wf.add_item('No Stores...',

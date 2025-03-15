@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import datetime
 from multiprocessing.sharedctypes import Value
 import sys
 import re
@@ -79,6 +80,7 @@ def main(wf):
         # update devices and scenes
         stores = get_stores()
         wf.store_data('stores', stores)
+        wf.store_data('last_update', datetime.datetime.now())
         print('Stores updated')
         return 0  # 0 means script exited cleanly
     
