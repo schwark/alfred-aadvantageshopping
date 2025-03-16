@@ -74,6 +74,7 @@ EXCLUDE_PATTERNS = [
     '*.dist-info',
     '*.egg-info',
     '__pycache__',
+    "*.alfredworkflow",
 ]
 
 log = logging.getLogger('[%(levelname)s] %(message)s')
