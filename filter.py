@@ -3,25 +3,39 @@
 import datetime
 import sys
 import argparse
+from workflow import (
+    Workflow, ICON_WEB, ICON_NOTE, ICON_INFO, ICON_BURN, ICON_SYNC, web, PasswordNotFound
+)
 from workflow.background import is_running, run_in_background
-from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
-from workflow import Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
-from common import get_logo_file, get_stored_data
+from common import get_buttons, save_button, delete_button, get_icon, get_logo_file, get_stored_data
 
 log = None
 
 def add_config_commands(wf, args, config_commands):
+    """Add configuration commands to workflow items."""
     word = args.query.lower().split(' ')[0] if args.query else ''
-    config_command_list = wf.filter(word, config_commands.keys(), min_score=80, match_on=MATCH_SUBSTRING | MATCH_STARTSWITH | MATCH_ATOM)
+    config_command_list = wf.filter(word, config_commands.keys(), min_score=80)
     if config_command_list:
         for cmd in config_command_list:
             wf.add_item(config_commands[cmd]['title'],
-                        config_commands[cmd]['subtitle'],
-                        arg=config_commands[cmd]['args'],
-                        autocomplete=config_commands[cmd]['autocomplete'],
-                        icon=config_commands[cmd]['icon'],
-                        valid=config_commands[cmd]['valid'])
+                       config_commands[cmd]['subtitle'],
+                       arg=config_commands[cmd]['args'],
+                       autocomplete=config_commands[cmd]['autocomplete'],
+                       icon=config_commands[cmd]['icon'],
+                       valid=config_commands[cmd]['valid'])
     return config_command_list
+
+def parse_add_command(query):
+    """Parse add command in format: add name|url|tag1,tag2."""
+    parts = query.split('|')
+    if len(parts) < 2:
+        return None
+    
+    name = parts[0].strip()
+    url = parts[1].strip()
+    tags = parts[2].strip().split(',') if len(parts) > 2 else []
+    
+    return {'name': name, 'url': url, 'tags': tags}
 
 def is_filtered_store(x, filters, favorites):
     if ':fav' in filters and favorites and x['id'] not in favorites:
@@ -44,7 +58,8 @@ def get_subtitle(x, favorites):
     regularly = ''
     result = u'earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
-        result = u'🏆 '+result
+        bonus_pct = get_bonus_percentage(x)
+        result = u'🏆 '+result+f' (+{bonus_pct:.0f}% bonus)'
         regularly = u' ↓ regularly '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
     if x['id'] in favorites and favorites[x['id']]:
         result = u'❤️ '+ result
@@ -56,8 +71,40 @@ def get_subtitle(x, favorites):
         pass
     return result
         
+def get_bonus_percentage(store):
+    """Calculate bonus percentage as percentage increase over regular rate.
+    For example: if regular rate is 2% and current rate is 5%,
+    bonus is (5-2)/2 * 100 = 150% increase"""
+    rebate = store['rebate']
+    if not rebate['isElevation']:
+        return 0
+    
+    def parse_value(val):
+        if isinstance(val, (int, float)):
+            return float(val)
+        return float(str(val).replace('%', ''))
+    
+    current = parse_value(rebate['value'])
+    original = parse_value(rebate['originalValue'])
+    if original == 0:  # avoid division by zero
+        return 0
+    return ((current - original) / original) * 100
+
 def get_query_stores(wf, query, stores, filters, favorites):
-    filtered_stores = filter(lambda x: is_filtered_store(x,filters,favorites), stores)
+    filtered_stores = list(filter(lambda x: is_filtered_store(x,filters,favorites), stores))
+    
+    # If :prm filter is present, sort by bonus percentage in descending order
+    if ':prm' in filters:
+        # First filter to only promotional stores
+        promo_stores = [store for store in filtered_stores if store['rebate']['isElevation']]
+        # Sort by bonus percentage
+        promo_stores.sort(
+            key=get_bonus_percentage,
+            reverse=True
+        )
+        return promo_stores
+    
+    # Otherwise use normal filtering
     result = wf.filter(query, filtered_stores, key=lambda x: search_key_for_store(x))
     # check to see if the first one is an exact match - if yes, remove all the other results
     if result and query and 'name' in result[0] and result[0]['name'] and result[0]['name'].lower() == query.lower():
@@ -66,7 +113,9 @@ def get_query_stores(wf, query, stores, filters, favorites):
 
 def main(wf):
     # retrieve cached devices and scenes
-    last_update = get_stored_data(wf, 'last_update') or datetime.datetime.fromtimestamp(0)
+    last_update = get_stored_data(wf, 'last_update') or 0
+    if isinstance(last_update, datetime.datetime):
+        last_update = int(last_update.timestamp())
     stores = get_stored_data(wf, 'stores')
     favorites = get_stored_data(wf, 'favorites')
 
@@ -80,10 +129,11 @@ def main(wf):
 
     log.debug("args are "+str(args))
 
-    filters = [ t for t in args.query.split() if t.startswith(':') ]
+    filters = [ t for t in args.query.split() ] if args.query else []
+    filters = [ t for t in filters if t.startswith(':') ]
     log.debug("filters are "+str(filters))
     # update query post extraction
-    query = " ".join(filter(lambda x:x[0]!=':', args.query.split()))
+    query = " ".join(filter(lambda x:x[0]!=':', args.query.split())) if args.query else ""
     log.debug("query is now "+query)
 
     config_commands = {
@@ -130,7 +180,7 @@ def main(wf):
 
     freq = 86400
     # Is cache over 1 hour old or non-existent?
-    if datetime.datetime.now() - last_update > datetime.timedelta(seconds=freq):
+    if datetime.datetime.now() - datetime.datetime.fromtimestamp(last_update) > datetime.timedelta(seconds=freq):
         run_in_background('update',
                         ['/usr/bin/python3',
                         wf.workflowfile('command.py'),
@@ -181,8 +231,7 @@ def main(wf):
     wf.send_feedback()
     return 0
 
-
-if __name__ == u"__main__":
+if __name__ == '__main__':
     wf = Workflow(update_settings={
         'github_slug': 'schwark/alfred-aadvantageshopping'
     })

@@ -1,3 +1,68 @@
+# Alfred Web Button Workflow
+
+A simple Alfred workflow to manage and quickly access your web bookmarks/buttons.
+
+## Features
+
+- Add web buttons with custom names and tags
+- Search buttons by name or tags
+- Quick access to your favorite websites
+- Simple and intuitive interface
+
+## Installation
+
+1. Download the latest release from the [releases page](https://github.com/schwark/alfred-webbutton/releases)
+2. Double click the `.alfredworkflow` file to install
+3. Alfred will automatically install the workflow
+
+## Usage
+
+The workflow uses the `wb` keyword to access all functionality.
+
+### Adding a Web Button
+
+```
+wb add name|url|tag1,tag2
+```
+
+Example:
+```
+wb add GitHub|https://github.com|dev,code
+```
+
+### Accessing Web Buttons
+
+Simply type `wb` followed by your search term. The workflow will search through button names and tags.
+
+Example:
+```
+wb github
+```
+
+### Search by Tags
+
+Include tags in your search to filter buttons by their tags:
+
+```
+wb dev
+```
+
+## Development
+
+This workflow is built using Python and the [Alfred-Workflow](https://github.com/deanishe/alfred-workflow) library.
+
+To contribute:
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+## License
+
+MIT License
+
 # alfred-aadvantageshopping
 Alfred  Workflow for to access AAdvantage Eshopping sites 
 ## Install

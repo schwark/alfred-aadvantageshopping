@@ -130,3 +130,23 @@ dmypy.json
 .DS_Store
 
 *.alfredworkflow
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Alfred specific
+*.alfredworkflow
+icons/
+data/
