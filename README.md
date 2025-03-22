@@ -64,7 +64,7 @@ When viewing search results, you can use these keyboard shortcuts to take action
 
 ## Installation
 
-1. Download the [latest release](https://github.com/schwark/alfred-aadvantageshopping/releases/latest)
+1. Download the [latest release](https://github.com/schwark/alfred-mileageshopping/releases/latest)
 2. Double-click the `.alfredworkflow` file
 3. Alfred will install the workflow
 
