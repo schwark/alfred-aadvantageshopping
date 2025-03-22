@@ -83,12 +83,12 @@ ae brand <brand>
 
 Available brands:
 
-| Brand | Logo | Command | Default | Currency |
-|-------|------|---------|---------|----------|
-| American Airlines | ![American Airlines](https://www.google.com/s2/favicons?domain=aa.com) | `ae brand american` | ✓ | AAdvantage miles |
-| United Airlines | ![United Airlines](https://www.google.com/s2/favicons?domain=united.com) | `ae brand united` | | United miles |
-| Delta Air Lines | ![Delta Air Lines](https://www.google.com/s2/favicons?domain=delta.com) | `ae brand delta` | | Delta SkyMiles |
-| Alaska Airlines | ![Alaska Airlines](https://www.google.com/s2/favicons?domain=alaskaair.com) | `ae brand alaska` | | Alaska Mileage Plan miles |
-| Southwest Airlines | ![Southwest Airlines](https://www.google.com/s2/favicons?domain=southwest.com) | `ae brand southwest` | | Rapid Rewards points |
-| USAA | ![USAA](https://www.google.com/s2/favicons?domain=usaa.com) | `ae brand usaa` | | USAA points |
-| Barclays | ![Barclays](https://www.google.com/s2/favicons?domain=barclays.com) | `ae brand barclays` | | Barclays points |
+| Brand | Command | Default | Currency |
+|-------|---------|---------|----------|
+| ![American Airlines](https://www.google.com/s2/favicons?domain=aa.com) American Airlines | `ae brand american` | ✓ | AAdvantage miles |
+| ![United Airlines](https://www.google.com/s2/favicons?domain=united.com) United Airlines | `ae brand united` | | United miles |
+| ![Delta Air Lines](https://www.google.com/s2/favicons?domain=delta.com) Delta Air Lines | `ae brand delta` | | Delta SkyMiles |
+| ![Alaska Airlines](https://www.google.com/s2/favicons?domain=alaskaair.com) Alaska Airlines | `ae brand alaska` | | Alaska Mileage Plan miles |
+| ![Southwest Airlines](https://www.google.com/s2/favicons?domain=southwest.com) Southwest Airlines | `ae brand southwest` | | Rapid Rewards points |
+| ![USAA](https://www.google.com/s2/favicons?domain=usaa.com) USAA | `ae brand usaa` | | USAA points |
+| ![Barclays](https://www.google.com/s2/favicons?domain=barclays.com) Barclays | `ae brand barclays` | | Barclays points |
