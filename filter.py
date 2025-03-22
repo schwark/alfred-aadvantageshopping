@@ -3,18 +3,89 @@
 import datetime
 import sys
 import argparse
+import os
 from workflow import (
-    Workflow, ICON_WEB, ICON_NOTE, ICON_INFO, ICON_BURN, ICON_SYNC, web, PasswordNotFound
+    Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SYNC
 )
-from workflow.background import is_running, run_in_background
-from common import get_buttons, save_button, delete_button, get_icon, get_logo_file, get_stored_data
+from common import get_logo_file, get_stored_data, get_stores
+from brands import BRANDS
+from command import update_brand
 
 log = None
 
+# Configuration commands for the workflow
+config_commands = {
+    'reinit': {
+        'title': 'Reinitialize workflow',
+        'subtitle': 'Reset all settings to defaults',
+        'args': '--reinit',
+        'autocomplete': 'reinit',
+        'icon': ICON_BURN,
+        'valid': True
+    },
+    'update': {
+        'title': 'Update stores',
+        'subtitle': 'Update the list of stores',
+        'args': '--update',
+        'autocomplete': 'update',
+        'icon': ICON_SYNC,
+        'valid': True
+    },
+    'logos': {
+        'title': 'Update logos',
+        'subtitle': 'Update store logos',
+        'args': '--logos',
+        'autocomplete': 'logos',
+        'icon': ICON_SYNC,
+        'valid': True
+    },
+    'brand': {
+        'title': 'Change brand',
+        'subtitle': 'Switch between different brands',
+        'args': '--brand',
+        'autocomplete': 'brand ',
+        'icon': ICON_WEB,
+        'valid': False
+    }
+}
+
 def add_config_commands(wf, args, config_commands):
     """Add configuration commands to workflow items."""
-    word = args.query.lower().split(' ')[0] if args.query else ''
-    config_command_list = wf.filter(word, config_commands.keys(), min_score=80)
+    if not args.query:
+        return []
+        
+    words = args.query.lower().split()
+    if not words:
+        return []
+        
+    command = words[0]
+    
+    # Handle brand command specially
+    if command == 'brand':
+        brand_query = words[1] if len(words) > 1 else ''
+        # Filter brands based on query
+        matching_brands = wf.filter(brand_query, BRANDS.keys(), min_score=80)
+        current_brand = get_stored_data(wf, 'current_brand')
+        if isinstance(current_brand, bytes):
+            current_brand = current_brand.decode('utf-8')
+            
+        for brand_key in matching_brands:
+            brand_info = BRANDS[brand_key]
+            subtitle = f"Set {brand_info['name']} as current brand"
+            if brand_key == current_brand:
+                subtitle = f"✓ {subtitle}"
+            wf.add_item(
+                title=brand_info['name'],
+                subtitle=subtitle,
+                arg=f"--brand {brand_key}",
+                autocomplete=f"brand {brand_key}",
+                icon=brand_info['favicon'],
+                valid=True
+            )
+        return matching_brands
+    
+    # Handle other commands
+    config_command_list = wf.filter(command, config_commands.keys(), min_score=80)
     if config_command_list:
         for cmd in config_command_list:
             wf.add_item(config_commands[cmd]['title'],
@@ -53,44 +124,45 @@ def search_key_for_store(x):
     return x['name']+(' '+categories if categories else '')
 
 def get_subtitle(x, favorites):
-    spacer = u'   '
+    """Get subtitle for store item."""
+    subtitle = []
+    
+    # Add favorite indicator
+    if x['id'] in favorites:
+        subtitle.append('❤️')
+    
+    # Add rebate information
     rebate = x['rebate']
-    regularly = ''
-    result = u'earn '+str(rebate['value'])+' '+rebate['currency']
     if rebate['isElevation']:
         bonus_pct = get_bonus_percentage(x)
-        result = u'🏆 '+result+f' (+{bonus_pct:.0f}% bonus)'
-        regularly = u' ↓ regularly '+str(rebate['originalValue'])+' '+rebate['originalCurrency'] 
-    if x['id'] in favorites and favorites[x['id']]:
-        result = u'❤️ '+ result
-    result += spacer+regularly
-    categories = get_categories(x)
-    if categories:
-        #result = u'{0:<70} {1:<50}'.format(result, u' ⦿ '+categories) 
-        #result = result + spacer + u'⦿ '+categories
-        pass
-    return result
+        subtitle.append(f"⚡ {rebate['value']} {rebate['currency']} (+{bonus_pct:.0f}% bonus)")
+    else:
+        subtitle.append(f"💰 {rebate['value']} {rebate['currency']}")
+    
+    # Add categories if available
+    if 'categories' in x and x['categories']:
+        categories = [cat['name'] for cat in x['categories']]
+        subtitle.append(f"🏷️ {', '.join(categories)}")
+    
+    # Add direct indicator if applicable
+    if x.get('isDirect', False):
+        subtitle.append("🎯 Direct")
+    
+    # Add mobile tracking indicator if applicable
+    if x.get('flags', {}).get('tracksMobile', False):
+        subtitle.append("📱 Mobile")
+    
+    return '  '.join(subtitle)
         
 def get_bonus_percentage(store):
-    """Calculate bonus percentage as percentage increase over regular rate.
-    For example: if regular rate is 2% and current rate is 5%,
-    bonus is (5-2)/2 * 100 = 150% increase"""
-    rebate = store['rebate']
-    if not rebate['isElevation']:
-        return 0
-    
-    def parse_value(val):
-        if isinstance(val, (int, float)):
-            return float(val)
-        return float(str(val).replace('%', ''))
-    
-    current = parse_value(rebate['value'])
-    original = parse_value(rebate['originalValue'])
-    if original == 0:  # avoid division by zero
-        return 0
-    return ((current - original) / original) * 100
+    """Get the pre-calculated bonus percentage for a store."""
+    return store.get('bonus_percentage', 0)
 
 def get_query_stores(wf, query, stores, filters, favorites):
+    if stores is None:
+        wf.logger.error("No stores available")
+        return []
+        
     filtered_stores = list(filter(lambda x: is_filtered_store(x,filters,favorites), stores))
     
     # If :prm filter is present, sort by bonus percentage in descending order
@@ -117,8 +189,24 @@ def main(wf):
     if isinstance(last_update, datetime.datetime):
         last_update = int(last_update.timestamp())
     stores = get_stored_data(wf, 'stores')
-    favorites = get_stored_data(wf, 'favorites')
-
+    favorites = get_stored_data(wf, 'favorites') or {}
+    
+    # Ensure default brand is set and icon.png exists
+    current_brand = get_stored_data(wf, 'current_brand')
+    if not current_brand:
+        current_brand = 'american'.encode('utf-8')
+        wf.store_data('current_brand', current_brand)
+    
+    # Check and update brand if icon.png is missing
+    if isinstance(current_brand, bytes):
+        current_brand = current_brand.decode('utf-8')
+    dst_icon = wf.workflowfile('icon.png')
+    if not os.path.exists(dst_icon):
+        try:
+            update_brand(wf, current_brand)
+        except ValueError as e:
+            log.error(f"Error updating brand: {e}")
+    
     # build argument parser to parse script args and collect their
     # values
     parser = argparse.ArgumentParser()
@@ -129,107 +217,31 @@ def main(wf):
 
     log.debug("args are "+str(args))
 
-    filters = [ t for t in args.query.split() ] if args.query else []
-    filters = [ t for t in filters if t.startswith(':') ]
-    log.debug("filters are "+str(filters))
-    # update query post extraction
-    query = " ".join(filter(lambda x:x[0]!=':', args.query.split())) if args.query else ""
-    log.debug("query is now "+query)
-
-    config_commands = {
-        'update': {
-            'title': 'Update Stores',
-            'subtitle': 'Update the supported stores on AAdvantage',
-            'autocomplete': 'update',
-            'args': ' --update',
-            'icon': ICON_SYNC,
-            'valid': True
-        },
-        'logos': {
-            'title': 'Update Store Logos',
-            'subtitle': 'Update the supported store logos on AAdvantage',
-            'autocomplete': 'logos',
-            'args': ' --logos',
-            'icon': ICON_SYNC,
-            'valid': True
-        },
-        'reinit': {
-            'title': 'Reinitialize the workflow',
-            'subtitle': 'CAUTION: this deletes all scenes, devices and apikeys...',
-            'autocomplete': 'reinit',
-            'args': ' --reinit',
-            'icon': ICON_BURN,
-            'valid': True
-        },
-        'workflow:update': {
-            'title': 'Update the workflow',
-            'subtitle': 'Updates workflow to latest github version',
-            'autocomplete': 'workflow:update',
-            'args': '',
-            'icon': ICON_SYNC,
-            'valid': True
-        }
-    }
-
-    # add config commands to filter
+    # Add config commands
     add_config_commands(wf, args, config_commands)
-
-    ####################################################################
-    # View/filter devices or scenes
-    ####################################################################
-
-    freq = 86400
-    # Is cache over 1 hour old or non-existent?
-    if datetime.datetime.now() - datetime.datetime.fromtimestamp(last_update) > datetime.timedelta(seconds=freq):
-        run_in_background('update',
-                        ['/usr/bin/python3',
-                        wf.workflowfile('command.py'),
-                        '--update'])
-
-    # Check for an update and if available add an item to results
-    if wf.update_available:
-        # Add a notification to top of Script Filter results
-        wf.add_item('New version available',
-            'Action this item to install the update',
-            autocomplete='workflow:update',
-            icon=ICON_INFO)
-
-    if is_running('update'):
-        # Tell Alfred to run the script again every 0.5 seconds
-        # until the `update` job is complete (and Alfred is
-        # showing results based on the newly-retrieved data)
-        wf.rerun = 0.5
-        # Add a notification if the script is running
-        wf.add_item('Updating stores...', icon=ICON_INFO)
-
-    if not stores or len(stores) < 1:
-        wf.add_item('No Stores...',
-                    'Please use ae update - to update your AAdvantage Stores.',
-                    valid=False,
-                    icon=ICON_NOTE)
-        wf.send_feedback()
-        return 0
-
-    # If script was passed a query, use it to filter posts
-    stores = get_query_stores(wf, query, stores, filters, favorites)
-
-    if stores:
-        # Loop through the returned devices and add an item for each to
-        # the list of results for Alfred
-        for store in stores:
-            wf.add_item(title=store['name'],
-                    subtitle=get_subtitle(store, favorites),
-                    arg=store['clickUrl'],
-                    autocomplete=store['name'],
-                    valid=True,
-                    icon=get_logo_file(wf, store))
-    else:
-        wf.add_item(title='No qualifying stores...', 
-                    subtitle="No stores matched your criteria", 
-                    icon=ICON_NOTE)
-    # Send the results to Alfred as XML
+    
+    # Get stores for current brand
+    stores = get_stores()
+    
+    # Extract filters and update query
+    filters = [t for t in args.query.split()] if args.query else []
+    filters = [t for t in filters if t.startswith(':')]
+    query = " ".join(filter(lambda x: x[0]!=':', args.query.split())) if args.query else ""
+    
+    # Get filtered stores
+    filtered_stores = get_query_stores(wf, query, stores, filters, favorites)
+    
+    # Add filtered stores to results
+    for store in filtered_stores:
+        wf.add_item(
+            title=store['name'],
+            subtitle=get_subtitle(store, favorites),
+            arg=f'"{store["clickUrl"]}"',  # Quote the URL
+            valid=True,
+            icon=get_logo_file(wf, store)
+        )
+    
     wf.send_feedback()
-    return 0
 
 if __name__ == '__main__':
     wf = Workflow(update_settings={

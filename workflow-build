@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/env python3
 # encoding: utf-8
 #
 # Copyright (c) 2013 deanishe@deanishe.net.
@@ -50,8 +50,9 @@ from subprocess import check_call, CalledProcessError
 import sys
 from tempfile import mkdtemp
 from unicodedata import normalize
-
-from docopt import docopt
+import zipfile
+import argparse
+from datetime import datetime
 
 __version__ = "0.6"
 __author__ = "Dean Jackson <deanishe@deanishe.net>"
@@ -186,45 +187,37 @@ def build_workflow(workflow_dir, outputdir, overwrite=False, verbose=False):
     return True
 
 
-def main(args=None):
-    """Run CLI."""
-    # ------------------------------------------------------------
-    # CLI flags
-    args = docopt(__doc__, version=__version__)
-    if args.get('--verbose'):
-        log.setLevel(logging.INFO)
-    elif args.get('--quiet'):
-        log.setLevel(logging.ERROR)
-    elif args.get('--debug'):
+def main():
+    parser = argparse.ArgumentParser(description='Build Alfred workflow')
+    parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument('-f', '--force', action='store_true', help='Force overwrite of existing workflow')
+    parser.add_argument('-o', '--output', help='Output directory for workflow')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Show info messages and above')
+    parser.add_argument('-q', '--quiet', action='store_true', help='Only show errors and above')
+    parser.add_argument('-d', '--debug', action='store_true', help='Show debug messages')
+    parser.add_argument('workflow_dirs', nargs='+', help='Workflow directories to build')
+    
+    args = parser.parse_args()
+    
+    # Set up logging level based on verbosity
+    if args.debug:
         log.setLevel(logging.DEBUG)
+    elif args.verbose:
+        log.setLevel(logging.INFO)
+    elif args.quiet:
+        log.setLevel(logging.ERROR)
     else:
         log.setLevel(DEFAULT_LOG_LEVEL)
-
-    log.debug('log level=%s', logging.getLevelName(log.level))
-    log.debug('args=%r', args)
-
-    # Build options
-    force = args['--force']
-    outputdir = os.path.abspath(args['--output'] or os.curdir)
-    workflow_dirs = [os.path.abspath(p) for p in args['<workflow-dir>']]
-    verbose = log.level == logging.DEBUG
-
-    log.debug(u'outputdir=%r, workflow_dirs=%r', outputdir, workflow_dirs)
-
-    # ------------------------------------------------------------
-    # Build workflow(s)
-    errors = False
-    for path in workflow_dirs:
-        ok = build_workflow(path, outputdir, force, verbose)
-        if not ok:
-            errors = True
-
-    if errors:
-        return 1
-
-    return 0
+    
+    # Get output directory
+    outputdir = args.output or os.path.expanduser('~/Desktop')
+    log.debug('outputdir=%r, workflow_dirs=%r', outputdir, args.workflow_dirs)
+    
+    # Build each workflow
+    for dirpath in args.workflow_dirs:
+        build_workflow(dirpath, outputdir, args.force)
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    main()
 
