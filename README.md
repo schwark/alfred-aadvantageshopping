@@ -85,10 +85,10 @@ Available brands:
 
 | Brand | Logo | Command | Default | Currency |
 |-------|------|---------|---------|----------|
-| American Airlines | ![American Airlines](https://www.aa.com/favicon.ico) | `ae brand american` | ✓ | AAdvantage miles |
-| United Airlines | ![United Airlines](https://www.united.com/favicon.ico) | `ae brand united` | | United miles |
-| Delta Air Lines | ![Delta Air Lines](https://www.delta.com/favicon.ico) | `ae brand delta` | | Delta SkyMiles |
-| Alaska Airlines | ![Alaska Airlines](https://www.alaskaair.com/favicon.ico) | `ae brand alaska` | | Alaska Mileage Plan miles |
-| Southwest Airlines | ![Southwest Airlines](https://www.southwest.com/favicon.ico) | `ae brand southwest` | | Rapid Rewards points |
-| USAA | ![USAA](https://www.usaa.com/favicon.ico) | `ae brand usaa` | | USAA points |
-| Barclays | ![Barclays](https://www.barclays.com/favicon.ico) | `ae brand barclays` | | Barclays points |
+| American Airlines | ![American Airlines](https://www.google.com/s2/favicons?domain=aa.com) | `ae brand american` | ✓ | AAdvantage miles |
+| United Airlines | ![United Airlines](https://www.google.com/s2/favicons?domain=united.com) | `ae brand united` | | United miles |
+| Delta Air Lines | ![Delta Air Lines](https://www.google.com/s2/favicons?domain=delta.com) | `ae brand delta` | | Delta SkyMiles |
+| Alaska Airlines | ![Alaska Airlines](https://www.google.com/s2/favicons?domain=alaskaair.com) | `ae brand alaska` | | Alaska Mileage Plan miles |
+| Southwest Airlines | ![Southwest Airlines](https://www.google.com/s2/favicons?domain=southwest.com) | `ae brand southwest` | | Rapid Rewards points |
+| USAA | ![USAA](https://www.google.com/s2/favicons?domain=usaa.com) | `ae brand usaa` | | USAA points |
+| Barclays | ![Barclays](https://www.google.com/s2/favicons?domain=barclays.com) | `ae brand barclays` | | Barclays points |
