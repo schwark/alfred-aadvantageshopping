@@ -19,7 +19,10 @@ A powerful Alfred workflow for quick access to Mileage Rewards Shopping. Search 
 
 ### Basic Search
 1. Type `ae` followed by your search query
-2. Results show:
+2. You can search by:
+   - Store name
+   - Store category (e.g., "electronics", "clothing", "travel")
+3. Results show:
    - Store name
    - Current rebate rate
    - Bonus percentage (if elevated)
@@ -51,12 +54,13 @@ When viewing search results, you can use these keyboard shortcuts to take action
 - `:prm` - Show only stores with elevated rates
 
 ### Example Queries
-- `ae amazon` - Search for Amazon
+- `ae nike` - Search for Nike
 - `ae :fav` - Show all favorite stores
 - `ae :prm` - Show all stores with elevated rates
 - `ae :fav :prm` - Show favorite stores with elevated rates
-- `ae walmart :prm` - Search for Walmart with elevated rates
-- `ae target :fav` - Search for Target in favorites
+- `ae electronics :prm` - Show electronics stores with elevated rates
+- `ae clothing :fav` - Show clothing stores in favorites
+- `ae travel :fav :prm` - Show favorite travel stores with elevated rates
 
 ## Installation
 
